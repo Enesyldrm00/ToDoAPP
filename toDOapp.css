@@ -9,7 +9,7 @@ body {
     margin: 0;
 }
 
-/* Ana kutu: Başlık solda, liste sağda olsun diye flex-row yaptık */
+
 .ana-kapsayici {
     display: flex;
     flex-direction: row;
@@ -33,14 +33,13 @@ body {
 }
 
 h1 {
-    font-family: 'Patrick Hand', cursive; /* El yazısı fontu */
-    color: #444;
+    font-family: 'Patrick Hand', cursive; 
     font-size: 4em;
     text-align: right;
     margin: 0;
     line-height: 0.9;
-    transform: rotate(-5deg); /* Hafif sola yatır, doğal dursun */
-    text-shadow: 2px 2px 0px #ddd; /* Hafif gölge */
+    transform: rotate(-5deg); 
+    text-shadow: 2px 2px 0px #ddd; 
 }
 
 .islem-bolumu {

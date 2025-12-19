@@ -6,7 +6,7 @@ const liste = document.getElementById("gorevlistesi");
 
 
 //burada boş bir liste oluşturduk ,querySelectorAll tüm li leri seçti,push metodu ile textcontent(yazdırıyo) diziye ekliyo,kalan şeylerde
-//local storage mini bir veri tabanı ,JSON.stringify(gorevler) ile diziyi string hale getirip depolar sayfa yenilense bile dizi kaybolmaz
+
 
 function kaydet() {
   const gorevler = [];
@@ -15,57 +15,70 @@ function kaydet() {
   });
   localStorage.setItem("gorevler", JSON.stringify(gorevler));
 }
- //input.addEventListener  gemini bak space ekleme yapccam
+
  
 
  
-function yukle() {
+async function yukle(kategoriIsmi = "") {
+    liste.innerHTML = ""; 
+    let url = 'http://localhost:3000/tasks';
+    if (kategoriIsmi) url += `?category=${kategoriIsmi}`;
 
-    const kayitli = JSON.parse(localStorage.getItem("gorevler"));
-      kayitli.forEach(eleman=>{
-    const li = document.createElement("li");
-    li.textContent=eleman;
-    const silBtn=document.createElement("button");
-    silBtn.textContent="SİL";
-    silBtn.classList.add("sil-btn");
-    silBtn.addEventListener("click", () => {
+    const response = await fetch(url);
+    const kayitli = await response.json();
+
+    kayitli.forEach(eleman => {
         
-    li.remove();
-    kaydet();
-  }); 
-  li.appendChild(silBtn);
-  liste.appendChild(li);
-  
-
- 
-  });                                                       
+        arayuzeEkle(eleman.title, eleman.id, eleman.category_name); 
+    });
+}                             
      
-}
 
-  function ekle() {
-  const newtask = input.value.trim();              
-  if(newtask === "") return;
+async function ekle() {
+    const newtask = input.value.trim();
+    // HTML'deki <select id="kategoriSec"> elemanından ID'yi alıyoruz
+    const kategoriId = document.getElementById("kategoriSec").value; 
+
+    if (newtask === "") return;
+
+    const response = await fetch('http://localhost:3000/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            title: newtask, 
+            user_id: 1,           // SQL'deki mevcut user ID'n (pgAdmin'den bakabilirsin)
+            category_id: kategoriId 
+        })
+    });
+    
+    const veri = await response.json();
+    
   
-  const li = document.createElement("li");
-  li.textContent = newtask;
-
-   const silBtn=document.createElement("button");
-   silBtn.textContent="SİL"
-  silBtn.classList.add("sil-btn");
-
-
-
-
-  silBtn.addEventListener("click", () => {
-    li.remove();
-    kaydet();
-  });
-   li.appendChild(silBtn);
-  liste.appendChild(li);
-  input.value = "";
-  kaydet();
+    const kategoriAdi = document.getElementById("kategoriSec").options[document.getElementById("kategoriSec").selectedIndex].text;
+    
+ 
+    arayuzeEkle(veri.title, veri.id, kategoriAdi); 
+    input.value = "";
 }
+function arayuzeEkle(metin, id, kategoriAdi) {
+    const li = document.createElement("li");
+    
+   
+    li.innerHTML = `<span>${metin}</span> <small class="kat-etiket">${kategoriAdi || ''}</small>`;
 
+    const silBtn = document.createElement("button");
+    silBtn.textContent = "SİL";
+    silBtn.classList.add("sil-btn");
+
+    silBtn.addEventListener("click", async () => {
+        // SQL'den o ID'li satırı siliyoruz
+        await fetch(`http://localhost:3000/tasks/${id}`, { method: 'DELETE' });
+        li.remove();
+    });
+
+    li.appendChild(silBtn);
+    liste.appendChild(li);
+}
 // Butona tıklayınca ekle() çalışsın
 ekleBtn.addEventListener("click", ekle);
 input.addEventListener("keydown", function(event) {
